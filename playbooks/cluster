@@ -18,7 +18,7 @@ BOOTSTRAP_CONFIG_FILE = os.path.join(
     'roles/config/defaults/main.yaml')
 Node = namedtuple('Node', ['name', 'ip', 'ssh_port'])
 etcd_port = 4001
-
+calico_default_network = '172.20.0.0/16'
 
 def list_nodes():
     return list_node_group('nodes')
@@ -87,6 +87,7 @@ def list_inventory():
 
     group_vars = {
         'ansible_ssh_user': 'root',
+        'calico_default_network': calico_default_network,
         'ansible_ssh_private_key_file': '/root/.ssh/lain',
         'etcd_members': [{'name': node_name, 'ip': nodes[node_name].ip}
                          for node_name in etcd_members],
@@ -123,6 +124,7 @@ def list_inventory():
             'ansible_ssh_port': node.ssh_port,
             'node_ip': node.ip,
             'node_name': node.name,
+            'ssh_port': node.ssh_port,
             'is_lain_manager': node.name in managers,
             'is_etcd_member': node.name in etcd_members,
             'is_web_router': node.name in web_routers,
@@ -158,6 +160,7 @@ if __name__ == '__main__':
         bootstrap_conf = yaml.load(f)
         if bootstrap_conf["etcd_client_port"]:
             etcd_port = bootstrap_conf["etcd_client_port"]
+            calico_default_network = bootstrap_conf["calico_default_network"]
 
     if options.list:
         inventory = list_inventory()
